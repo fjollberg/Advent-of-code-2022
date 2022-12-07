@@ -1,2 +1,3 @@
-# Advent-of-code-2022
-Advent of Code 2022 in Powershell
+# Advent of code 2022
+
+In Powershell. Because I can.
