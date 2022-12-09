@@ -9,6 +9,7 @@ param (
 $Data = Get-Content $file
 
 $knot = [object[]]::new($NumberOfKnots)
+
 $max = @{
     x = 0
     y = 0
@@ -25,36 +26,30 @@ $visited = @{
     "0:0" = 1
 }
 
+function visit([object]$k) {
+    $visited[("{0}:{1}" -f $k.x, $k.y)] = 1
+}
+
+function updateMax([object]$k) {
+    $max.x = [Math]::Max($max.x, [Math]::Abs($k.x))
+    $max.y = [Math]::Max($max.y, [Math]::Abs($k.y))
+}
+
+function moveTail {
+    for ($k = $knot.Count-2; $k -ge 0; $k--) {
+        if (shouldMove $k) {
+            moveTailKnot $k
+        } else {
+            break
+        }
+    }
+}
+
 function shouldMove([int]$k) {
     ([Math]::Abs($knot[$k+1].x - $knot[$k].x) -gt 1) -or ([Math]::Abs($knot[$k+1].y - $knot[$k].y) -gt 1)
 }
 
-function visit([int]$x, [int]$y) {
-    $visited[("{0}:{1}" -f $x, $y)] = 1
-}
-
-function updateMax([int]$x, [int]$y) {
-    $max.x = [Math]::Max($max.x, [Math]::Abs($x))
-    $max.y = [Math]::Max($max.y, [Math]::Abs($y))
-}
-
-function moveRight([int] $step) {
-    while ($step--) {
-        $knot[$knot.Count-1].x++
-        updateMax $knot[$knot.Count-1].x $knot[$knot.Count-1].y 
-
-        for ($k = $knot.Count-2; $k -ge 0; $k--) {
-            if (shouldMove $k) {
-                moveKnot $k
-            } else {
-                break
-            }
-        }
-        visit $knot[0].x $knot[0].y
-    }
-}
-
-function moveknot([int]$k) {
+function moveTailKnot([int]$k) {
     if ($knot[$k+1].y -gt $knot[$k].y) {
         $knot[$k].y++
     } elseif ($knot[$k+1].y -lt $knot[$k].y) {
@@ -67,63 +62,51 @@ function moveknot([int]$k) {
     }
 }
 
+function moveRight([int] $step) {
+    while ($step--) {
+        $knot[$knot.Count-1].x++
+        updateMax $knot[$knot.Count-1]
+
+        moveTail
+        visit $knot[0]
+    }
+}
+
 function moveLeft([int] $step) {
     while ($step--) {
         $knot[$knot.Count-1].x--
-        updateMax $knot[$knot.Count-1].x $knot[$knot.Count-1].y 
+        updateMax $knot[$knot.Count-1]
 
-        for ($k = $knot.Count-2; $k -ge 0; $k--) {
-            if (shouldMove $k) {
-                moveKnot $k
-            } else {
-                break
-            }
-        }
-
-        visit $knot[0].x $knot[0].y
+        moveTail
+        visit $knot[0]
     }
 }
 
 function moveUp([int] $step) {
     while ($step--) {
         $knot[$knot.Count-1].y++
-        updateMax $knot[$knot.Count-1].x $knot[$knot.Count-1].y 
+        updateMax $knot[$knot.Count-1]
 
-        for ($k = $knot.Count-2; $k -ge 0; $k--) {
-            if (shouldMove $k) {
-                moveKnot $k
-            } else {
-                break
-            }
-        }
-        visit $knot[0].x $knot[0].y
+        moveTail
+        visit $knot[0]
     }
 }
 
 function moveDown([int] $step) {
     while ($step--) {
         $knot[$knot.Count-1].y--
-        updateMax $knot[$knot.Count-1].x $knot[$knot.Count-1].y 
+        updateMax $knot[$knot.Count-1]
 
-        for ($k = $knot.Count-2; $k -ge 0; $k--) {
-            if (shouldMove $k) {
-                moveKnot $k
-            } else {
-                break
-            }
-        }
-        visit $knot[0].x $knot[0].y
+        moveTail
+        visit $knot[0]
     }
 }
 
-function point([int]$x, [int]$y) {
+function drawPoint([int]$x, [int]$y) {
     for ($i = $knot.Count - 1; $i -ge 0; $i--) {
         if (($knot[$i].x -eq $x) -and ($knot[$i].y -eq $y)) {
             if ($i -eq ($knot.Count - 1)) {
                 return 'H'
-            }
-            if ($i -eq 0) {
-                return 'T'
             }
             return ($NumberOfKnots - $i - 1)
         }
@@ -134,31 +117,30 @@ function point([int]$x, [int]$y) {
     return '.'
 }
 
-function printExample {
+function printState {
     foreach ($y in (${max}.y..-${max}.y)) {
         $str = ''
         foreach ($x in (-${max}.x)..${max}.x) {
-            $str += point $x $y 
+            $str += drawPoint $x $y 
         }
-        Write-Host $str
+        Write-Verbose $str
     }
 }
 
 $g = 1
 foreach ($move in $Data) {
     ($dir, [int]$step) = $move.Split(' ')
-    Write-Verbose ("move {2}: {0} {1}" -f $dir, $step, $g)
+    Write-Verbose ("move {2}: {0} {1}" -f $dir, $step, $g++)
     switch -Exact ($dir) {
         'R' { moveRight $step; break}
         'L' { moveLeft $step; break}
         'U' { moveUp $step; break}
         'D' { moveDown $step; break}
     }
-    $g++
 
     if ($VerbosePreference -ne 'SilentlyContinue') {
-        printExample
-        Write-Host ""
+        printState
+        Write-Verbose ""
         Start-Sleep -Milliseconds $Sleep
     }
     if ($Stop -and ($g -gt $Stop)) {break}
