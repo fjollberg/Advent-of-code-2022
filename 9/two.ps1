@@ -35,12 +35,12 @@ function moveRight([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                $knot[$k].x++
                 if ($knot[$k+1].y -gt $knot[$k].y) {
                     $knot[$k].y++
                 } elseif ($knot[$k+1].y -lt $knot[$k].y) {
                     $knot[$k].y--
                 }
+                $knot[$k].x++
             }
         }
         visit $knot[0].x $knot[0].y
@@ -53,12 +53,12 @@ function moveLeft([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                $knot[$k].x--
                 if ($knot[$k+1].y -gt $knot[$k].y) {
                     $knot[$k].y++
                 } elseif ($knot[$k+1].y -lt $knot[$k].y) {
                     $knot[$k].y--
                 }
+                $knot[$k].x--
             }
         }
         visit $knot[0].x $knot[0].y
@@ -71,12 +71,12 @@ function moveUp([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                $knot[$k].y++
                 if ($knot[$k+1].x -gt $knot[$k].x) {
                     $knot[$k].x++
                 } elseif ($knot[$k+1].x -lt $knot[$k].x) {
                     $knot[$k].x--
                 }
+                $knot[$k].y++
             }
         }
         visit $knot[0].x $knot[0].y
@@ -89,17 +89,19 @@ function moveDown([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                $knot[$k].y--
                 if ($knot[$k+1].x -gt $knot[$k].x) {
                     $knot[$k].x++
                 } elseif ($knot[$k+1].x -lt $knot[$k].x) {
                     $knot[$k].x--
                 }
+                $knot[$k].y--
             }
         }
         visit $knot[0].x $knot[0].y
     }
 }
+
+
 
 $g = 0
 foreach ($move in $Data) {
