@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param (
     [String]$File = "./input.txt",
-    [int] $NumberOfKnots = 2
+    [int] $NumberOfKnots = 2,
+    [int] $Stop = 0
 )
 
 $Data = Get-Content $file
@@ -34,18 +35,15 @@ function moveRight([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                if ($knot[$k+1].y -eq $knot[$k].y) {
-                    $knot[$k].x++
-                } elseif ($knot[$k+1].y -gt $knot[$k].y) {
-                    $knot[$k].x++
+                $knot[$k].x++
+                if ($knot[$k+1].y -gt $knot[$k].y) {
                     $knot[$k].y++
-                } else {
-                    $knot[$k].x++
+                } elseif ($knot[$k+1].y -lt $knot[$k].y) {
                     $knot[$k].y--
                 }
             }
-            visit $knot[$k].x $knot[$k].y    
         }
+        visit $knot[0].x $knot[0].y
     }
 }
 
@@ -55,18 +53,15 @@ function moveLeft([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                if ($knot[$k+1].y -eq $knot[$k].y) {
-                    $knot[$k].x--
-                } elseif ($knot[$k+1].y -gt $knot[$k].y) {
-                    $knot[$k].x--
+                $knot[$k].x--
+                if ($knot[$k+1].y -gt $knot[$k].y) {
                     $knot[$k].y++
-                } else {
-                    $knot[$k].x--
+                } elseif ($knot[$k+1].y -lt $knot[$k].y) {
                     $knot[$k].y--
                 }
             }
-            visit $knot[$k].x $knot[$k].y    
         }
+        visit $knot[0].x $knot[0].y
     }
 }
 
@@ -76,18 +71,15 @@ function moveUp([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                if ($knot[$k+1].x -eq $knot[$k].x) {
-                    $knot[$k].y++
-                } elseif ($knot[$k+1].x -gt $knot[$k].x) {
+                $knot[$k].y++
+                if ($knot[$k+1].x -gt $knot[$k].x) {
                     $knot[$k].x++
-                    $knot[$k].y++
-                } else {
+                } elseif ($knot[$k+1].x -lt $knot[$k].x) {
                     $knot[$k].x--
-                    $knot[$k].y++
                 }
             }
-            visit $knot[$k].x $knot[$k].y    
         }
+        visit $knot[0].x $knot[0].y
     }
 }
 
@@ -97,29 +89,30 @@ function moveDown([int] $step) {
 
         for ($k = $knot.Count-2; $k -ge 0; $k--) {
             if (shouldMove $k) {
-                if ($knot[$k+1].x -eq $knot[$k].x) {
-                    $knot[$k].y--
-                } elseif ($knot[$k+1].x -gt $knot[$k].x) {
+                $knot[$k].y--
+                if ($knot[$k+1].x -gt $knot[$k].x) {
                     $knot[$k].x++
-                    $knot[$k].y--
-                } else {
+                } elseif ($knot[$k+1].x -lt $knot[$k].x) {
                     $knot[$k].x--
-                    $knot[$k].y--
                 }
             }
-            visit $knot[$k].x $knot[$k].y    
         }
+        visit $knot[0].x $knot[0].y
     }
 }
 
+$g = 0
 foreach ($move in $Data) {
     ($dir, [int]$step) = $move.Split(' ')
+    Write-Verbose ("move {2}: {0} {1}" -f $dir, $step, $g)
     switch -Exact ($dir) {
         'R' { moveRight $step; break}
         'L' { moveLeft $step; break}
         'U' { moveUp $step; break}
         'D' { moveDown $step; break}
     }
+    $g++
+    if ($Stop -and ($g -gt $Stop)) {break}
 }
 
 Write-Host "answer:" $visited.Count
