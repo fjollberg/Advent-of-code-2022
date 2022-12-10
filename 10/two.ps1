@@ -12,13 +12,18 @@ $cycle = [System.Collections.ArrayList]@()
 $screen = [System.Collections.ArrayList]@()
 
 function pixel {
-    if ((($screen.Count % $width) -ge ($cycle[$screen.Count] -1)) `
-        -and (($screen.Count % $width) -le ($cycle[$screen.Count] +1))) {
+    $sprite = (
+        ($screen.Count % $width - 1),
+        ($screen.Count % $width),
+        ($screen.Count % $width + 1)
+    )
+
+    if ($cycle[$screen.Count] -in $sprite) {
         $char = '#'
     } else {
         $char = '.'
     }
-    Write-Verbose ("cycle: {0} X: {1} char '{2}'" -f $screen.Count, $cycle[$screen.Count], $char)
+    Write-Verbose ("cycle: {0} X: {1} char: '{2}'" -f $screen.Count, $cycle[$screen.Count], $char)
     $char
 }
 
