@@ -51,6 +51,6 @@ foreach ($line in $Data) {
     }
 }
 
-for ($l = 0; $l -le $screen.Count; $l += $width) {
+for ($l = 0; $l -lt $screen.Count; $l += $width) {
     Write-Output ($screen[$l..($l+$width-1)] -join "")
 }
