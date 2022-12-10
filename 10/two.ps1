@@ -12,7 +12,6 @@ $cycle = [System.Collections.ArrayList]@()
 $screen = [System.Collections.ArrayList]@()
 
 function pixel {
-    $char = ''
     if ((($screen.Count % $width) -ge ($cycle[$screen.Count] -1)) `
         -and (($screen.Count % $width) -le ($cycle[$screen.Count] +1))) {
         $char = '#'
@@ -29,11 +28,8 @@ function cycle {
 }
 
 foreach ($line in $Data) {
-    $command = ''
-    
     Write-Verbose $line
 
-    [int]$arg = 0
     switch -Regex ($line) {
         "^noop$" {
             cycle
