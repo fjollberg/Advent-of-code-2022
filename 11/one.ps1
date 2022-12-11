@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param (
     [String]$File = "./input.txt",
-    [int]$Stop = 19
+    [int]$Stop = 20
 )
 
 $Data = Get-Content $file
@@ -53,8 +53,6 @@ function printState {
     }
 }
 
-[monkey]$m = $null
-
 foreach ($line in $Data) {
     switch -Regex ($line) {
         "^Monkey (?<id>[0-9]*):$" {
@@ -103,7 +101,7 @@ if ($VerbosePreference -ne 'SilentlyContinue') {
     }
 }
 
-for ($round = 0; $round -le $Stop; $round++) {
+for ($round = 0; $round -lt $Stop; $round++) {
     foreach ($m in $monkey) {
         Write-Verbose ("Monkey: {0}" -f $m.id)
 
