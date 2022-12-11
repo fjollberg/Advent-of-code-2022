@@ -32,7 +32,7 @@ $add = {
 class monkey {
     [int]$id
     $item = [System.Collections.ArrayList]@()
-    [object]$operand
+    [object]$worryFunction
     [string]$arg
     [int]$test
     [int]$ifTrue
@@ -73,10 +73,10 @@ foreach ($line in $Data) {
             $m.arg = $argument
             switch -Exact ($operation) {
                 '*' {
-                    $m.operand = $multiply
+                    $m.worryFunction = $multiply
                 }
                 '+' {
-                    $m.operand = $add
+                    $m.worryFunction = $add
                 }
             }
         }
@@ -108,7 +108,7 @@ for ($round = 0; $round -lt $Stop; $round++) {
         foreach ($item in $m.item) {
             Write-Verbose ("  Monkey inspects an item with a worry level of {0}" -f $item)
             $m.inspections++
-            $item = Invoke-Command -ScriptBlock $m.operand -ArgumentList @($item, $m.arg)
+            $item = Invoke-Command -ScriptBlock $m.worryFunction -ArgumentList @($item, $m.arg)
             $item = [Math]::Floor($item / 3)
             Write-Verbose ("    Monkey gets bored with item. Worry level is divided by 3 to {0}." -f $item)
 

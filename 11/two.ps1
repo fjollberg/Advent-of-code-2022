@@ -25,7 +25,7 @@ $add = {
 class monkey {
     [long]$id
     $item = [System.Collections.ArrayList]@()
-    [object]$operand
+    [object]$worryFunction
     [string]$arg
     [long]$test
     [long]$ifTrue
@@ -58,10 +58,10 @@ foreach ($line in $Data) {
             $m.arg = $argument
             switch -Exact ($operation) {
                 '*' {
-                    $m.operand = $multiply
+                    $m.worryFunction = $multiply
                 }
                 '+' {
-                    $m.operand = $add
+                    $m.worryFunction = $add
                 }
             }
         }
@@ -79,21 +79,19 @@ foreach ($line in $Data) {
 
 $product = 1
 foreach ($m in $monkey) {
-    $product = $product * $m.test
+    $product *= $m.test
 }
 
 for ($round = 0; $round -lt $Stop; $round++) {
     foreach ($m in $monkey) {
         foreach ($item in $m.item) {
             $m.inspections++
-            $item = Invoke-Command -ScriptBlock $m.operand -ArgumentList @($item, $m.arg)
+            $item = Invoke-Command -ScriptBlock $m.worryFunction -ArgumentList @($item, $m.arg)
 
             if (($item % $m.test) -eq 0) {
-                $item = $item % $product
-                $monkey[$m.ifTrue].item.Add($item) | Out-Null
+                $monkey[$m.ifTrue].item.Add($item % $product) | Out-Null
             } else {
-                $item = $item % $product
-                $monkey[$m.ifFalse].item.Add($item) | Out-Null
+                $monkey[$m.ifFalse].item.Add($item % $product) | Out-Null
             }
         }
         $m.item = [System.Collections.ArrayList]@()
@@ -104,7 +102,6 @@ for ($round = 0; $round -lt $Stop; $round++) {
 if ($VerbosePreference -ne 'SilentlyContinue') {
     Write-Verbose ("== After round {0} ==" -f ($round))
     printState
-    Write-Verbose ""
 }
 
 $res = 1
@@ -112,5 +109,3 @@ $monkey | Sort-Object -Property inspections -Descending | Select-Object -First 2
     $res *= $_.inspections
 }
 Write-Output ("Answer: {0}" -f $res)
-
-$product
