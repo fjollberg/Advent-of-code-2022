@@ -10,12 +10,15 @@ foreach ($line in $Data) {
     $grid += $line
 }
 $rowLength = $Data[0].Length
-$distance = New-Object int[] $grid.Length
 $visited = New-Object int[] $grid.Length
 
 [int]$S = $grid.IndexOf('S')
 [int]$E = $grid.IndexOf('E')
+$script:distance = 0
 
+function getPostion([int]$pos) {
+    return @([Math]::Floor($pos / $rowLength), ($pos % $rowLength))
+}
 
 function isReachable {
     param(
@@ -39,7 +42,7 @@ function isReachable {
     }
     # End node
     if ($node -eq $E) {
-        return $grid[$from] -eq 'z'
+        return $grid[$from] -in $('z', 'y')
     }
     # From initial point    
     if ($from -eq $S) {
@@ -52,58 +55,36 @@ function isReachable {
     return $false
 }
 
-function leastUnvisited {
-    [int]$res = -1
-    for ($i = 0; $i -lt $distance.Length; $i++) {
-        if ($distance[$i] -and -not $visited[$i]) {
-            if (($res -lt 0) -or ($distance[$i] -lt ($distance[$res]))) {
-                $res = $i
-            }
-        }
-    }
-    $res
-}
-
 function findDistanses {
     param(
         [int]$Start
     )
 
-    $nextNodes = (($Start + 1), ($Start - 1), ($Start + $rowLength), ($Start - $rowLength)) | `
+    if ($visited[$Start]) {
+        return
+    }
+
+#    Write-Verbose ("At {0},{1}" -f (getPostion($Start)))
+
+    if ($Start -eq $E) {
+        Write-Verbose ("Found E at : {0},{1}" -f (getPostion($Start)))
+        Write-Output ("Distance: {0}" -f $distance)
+        exit
+    }
+
+    $visited[$Start] = 1
+
+    [array](($Start + 1), ($Start - 1), ($Start + $rowLength), ($Start - $rowLength)) | `
         Where-Object {isReachable -node $_ -from $Start}
-
-    foreach ($nextNode in $nextNodes) {
-        if (-not $distance[$nextNode] -or ($distance[$nextNode] -lt ($distance[$Start] + 1))) {
-            $distance[$nextNode] = $distance[$Start] + 1
-            Write-Verbose ("Calculated distance from {0} to {1}: {2}" -f $Start, $nextNode, $distance[$nextNode])
-        }
-    }
-
-    $nextStep = (leastUnvisited)
-
-    if ($nextStep -ne $E) {
-        $visited[$nextStep] = 1
-        findDistanses -Start $nextStep
-    }
 }
 
 Write-Verbose ("Found S at {0}" -f $S)
 Write-Verbose ("Found E at {0}" -f $E)
 
-$visited[$S] = 1
-
-findDistanses -Start $S
-
-if ($VerbosePreference -ne 'SilentlyContinue') {
-    $str = ""
-    for ($i = 0; $i -lt $distance.Length; $i++) {
-        if ($i % $rowLength -eq 0) {
-            Write-Verbose ("{0}" -f $str)
-            $str = ""
-        }
-        $str += ("{0:d2}," -f $distance[$i])
-    }
-    Write-Verbose ("{0}" -f $str)
+$nextNodes = @($S)
+while ($nextNodes.Length) {
+    $nextNodes = $nextNodes | Foreach-Object {findDistanses -Start $_}
+    $script:distance++
+    Write-Verbose ("Next nodes: {0}" -f $nextNodes.Length)
+    Write-Output ("Distance: {0}" -f $distance)
 }
-
-Write-Output ("answer: {0}" -f $distance[$E])
