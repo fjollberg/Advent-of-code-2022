@@ -52,7 +52,11 @@ function isReachable {
     if (([byte]($grid[$from]) + 1) -ge ([byte]($grid[$node]))) {
         return $true
     }
-    return $false
+    # Other points
+    Write-Verbose ("Considering {0},{1}" -f (getPostion($node)))
+    $step = [byte]($grid[$node]) - [byte]($grid[$from])
+    Write-Verbose ("Considering step {0},{1}: {2}" -f $grid[$from], $grid[$node], $step)
+    return $step -le 1
 }
 
 function findDistanses {
